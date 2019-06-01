@@ -1,0 +1,144 @@
+# Rime schema
+# vim: set sw=2 sts=2 et:
+# encoding: utf-8
+
+schema:
+  schema_id: double_pinyin_ziguang
+  name: "紫光双拼"
+  version: 0.2
+  author:
+    - "Stanley Wang <wavestyle@gmail.com>"
+  dependencies:
+    - luna_pinyin
+  description: |
+    朙月拼音＋紫光雙拼方案。
+
+switches:
+  - name: ascii_mode
+    reset: 0
+    states: ["中文", "西文"]
+  - name: full_shape
+    states: ["半角", "全角"]
+  - name: simplification
+    states: ["漢字", "汉字"]
+  - name: ascii_punct
+    states: ["。，", "．，"]
+
+engine:
+  processors:
+    - ascii_composer
+    - recognizer
+    - key_binder
+    - speller
+    - punctuator
+    - selector
+    - navigator
+    - express_editor
+  segmentors:
+    - ascii_segmentor
+    - matcher
+    - abc_segmentor
+    - punct_segmentor
+    - fallback_segmentor
+  translators:
+    - punct_translator
+    - r10n_translator
+    - reverse_lookup_translator
+  filters:
+    - simplifier
+    - uniquifier
+
+speller:
+  alphabet: zyxwvutsrqponmlkjihgfedcba;  # 呃，倒背字母表完全是個人喜好
+  delimiter: " '"                        # 隔音符號用「'」；第一位的空白用來自動插入到音節邊界處
+  algebra:                               # 拼寫運算規則，這個纔是實現雙拼方案的重點。寫法有很多種，當然也可以把四百多個音節碼一條一條地列舉
+    - erase/^xx$/             # 碼表中有幾個拼音不明的字，編碼成xx了，消滅他
+    - derive/^([jqxy])u$/$1v/
+    - derive/^([zcs])h/$1/             # zh, ch, sh => z, c, s
+    - derive/^([zcs])([^h])/$1h$2/     # z, c, s => zh, ch, sh
+    - xform/^([aoe].*)$/O$1/  # 添上固定的零聲母o，先標記爲大寫O
+    - xform/en$/W/
+    - xform/eng$/T/
+    - xform/in$|uai$/Y/
+    - xform/^zh/U/
+    - xform/^sh/I/
+    - xform/uo$/O/
+    - xform/ai$/P/
+    - xform/^ch/A/
+    - xform/[iu]ang$/G/
+    - xform/ang$/S/  # ang should be placed after iang/uang
+    - xform/ie$/D/
+    - xform/ian$/F/
+    - xform/i?ong$/H/
+    - xform/er$|iu$/J/
+    - xform/ei$/K/
+    - xform/uan$/L/
+    - xform/ing$/;/
+    - xform/ou$/Z/
+    - xform/[iu]a$/X/
+    - xform/iao$/B/
+    - xform/ue$|ui$|ve$/N/
+    - xform/un$/M/
+    - xform/ao$/Q/ # ao should be placed after iao
+    - xform/an$/R/ # an should be placed after uan/ian
+    - xlit/WTYUIOPAGSDFHJKLZXBNMQR/wtyuiopagsdfhjklzxbnmqr/  # 最後把雙拼碼全部變小寫
+
+translator:
+  dictionary: luna_pinyin           # 與【朙月拼音】共用詞典
+  prism: double_pinyin_ziguang      # prism 要以本輸入方案的名稱來命名，以免把朙月拼音的拼寫映射表覆蓋掉
+  preedit_format:                   # 這段代碼用來將輸入的雙拼碼反轉爲全拼顯示；待見雙拼碼的可以把這段拿掉
+    - xform/o(\w)/0$1/              # 零聲母先改爲0，以方便後面的轉換
+    - xform/([jqxy])n/$1ue/         # 提前轉換雙拼碼 n 和 g，因爲轉換後的拼音裏就快要出現這兩個字母了，那時將難以分辨出雙拼碼
+    - xform/([nl])n/$1ve/
+    - xform/([dtghkrzcsuai])n/$1ui/
+    - xform/([nljqx])g/$1iang/
+    - xform/([ghkuai])g/$1uang/
+    - xform/(\w)q/$1ao/
+    - xform/(\w)w/$1en/
+    - xform/(\w)r/$1an/
+    - xform/(\w)t/$1eng/
+    - xform/([jqxylmnbp])y/$1in/
+    - xform/([zcsuaighk])y/$1uai/
+    - xform/([dtnlgkhrzcsuai])o/$1uo/
+    - xform/(\w)p/$1ai/
+    - xform/(\w)s/$1ang/
+    - xform/(\w)d/$1ie/
+    - xform/(\w)f/$1ian/
+    - xform/([qjx])h/$1iong/
+    - xform/([dtnlgkhrzcsuai])h/$1ong/
+    - xform/0j/0er/
+    - xform/([dnlmjqx])j/$1iu/
+    - xform/(\w)k/$1ei/
+    - xform/(\w)l/$1uan/
+    - xform/(\w)z/$1ou/
+    - xform/([jqxdl)x/$1ia/
+    - xform/([gkhuai])x/$1ua/
+    - xform/(\w);/$1ing/
+    - xform/(\w)b/$1iao/
+    - xform/(\w)m/$1un/
+    - "xform/(^|[ '])u/$1zh/"  # 復原聲母，音節開始處的雙拼字母a改寫爲zh；其他位置的才真正是a
+    - "xform/(^|[ '])a/$1ch/"
+    - "xform/(^|[ '])i/$1sh/"
+    - xform/0(\w)/$1/          # 好了，現在可以把零聲母拿掉啦
+    - xform/([nljqxy])v/$1ü/   # 這樣纔是漢語拼音 :-)
+
+reverse_lookup:
+  dictionary: cangjie5
+  enable_completion: true
+  prefix: "`"
+  tips: 〔倉頡〕
+  preedit_format:
+    - "xlit|abcdefghijklmnopqrstuvwxyz|日月金木水火土竹戈十大中一弓人心手口尸廿山女田難卜符|"
+  comment_format:
+    - xform/([nl])v/$1ü/
+
+punctuator:
+  import_preset: default
+
+key_binder:
+  import_preset: default
+
+recognizer:
+  import_preset: default
+  patterns:
+    reverse_lookup: "`[a-z]*$"

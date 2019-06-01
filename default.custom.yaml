@@ -1,0 +1,4 @@
+patch:
+  "menu/page_size": 7
+  "schema_list":
+  - schema: double_pinyin_ziguang
