@@ -11,7 +11,7 @@
 
 ## 安装方法
 此处以中州韻为例，使用官方配置工具 东风破 [plum](https://github.com/rime/plum) 安装。
-* 先下载配置文件到对应位置
+* 下载rime-install, 并用它安装紫光双拼
 ```bash
 curl -fsSL https://git.io/rime-install | bash -s -- waveform/ziguang_shuangpin
 ```
