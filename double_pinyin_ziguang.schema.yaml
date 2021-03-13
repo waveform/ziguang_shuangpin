@@ -4,25 +4,25 @@
 
 schema:
   schema_id: double_pinyin_ziguang
-  name: "紫光双拼"
-  version: 0.2
+  name: 紫光双拼
+  version: "0.3"
   author:
     - "Stanley Wang <wavestyle@gmail.com>"
-  dependencies:
-    - luna_pinyin
   description: |
     朙月拼音＋紫光雙拼方案。
+  dependencies:
+    - luna_pinyin
 
 switches:
   - name: ascii_mode
     reset: 0
-    states: ["中文", "西文"]
+    states: [中文, 西文]
   - name: full_shape
-    states: ["半角", "全角"]
+    states: [半角, 全角]
   - name: simplification
-    states: ["漢字", "汉字"]
+    states: [漢字, 汉字]
   - name: ascii_punct
-    states: ["。，", "．，"]
+    states: [。，, ．，]
 
 engine:
   processors:
@@ -42,16 +42,17 @@ engine:
     - fallback_segmentor
   translators:
     - punct_translator
-    - r10n_translator
     - reverse_lookup_translator
+    - script_translator
   filters:
     - simplifier
     - uniquifier
 
 speller:
-  alphabet: zyxwvutsrqponmlkjihgfedcba;  # 呃，倒背字母表完全是個人喜好
-  delimiter: " '"                        # 隔音符號用「'」；第一位的空白用來自動插入到音節邊界處
-  algebra:                               # 拼寫運算規則，這個纔是實現雙拼方案的重點。寫法有很多種，當然也可以把四百多個音節碼一條一條地列舉
+  alphabet: zyxwvutsrqponmlkjihgfedcba;
+  initials: zyxwvutsrqponmlkjihgfedcba
+  delimiter: " '"
+  algebra:
     - erase/^xx$/             # 碼表中有幾個拼音不明的字，編碼成xx了，消滅他
     - derive/^([jqxy])u$/$1v/
     - derive/^([zcs])h/$1/             # zh, ch, sh => z, c, s
@@ -90,28 +91,28 @@ translator:
     - xform/o(\w)/0$1/              # 零聲母先改爲0，以方便後面的轉換
     - xform/([jqxy])n/$1ue/         # 提前轉換雙拼碼 n 和 g，因爲轉換後的拼音裏就快要出現這兩個字母了，那時將難以分辨出雙拼碼
     - xform/([nl])n/$1ve/
-    - xform/([dtghkrzcsuai])n/$1ui/
+    - xform/([dtgkhzcsuai])n/$1ui/
     - xform/([nljqx])g/$1iang/
-    - xform/([ghkuai])g/$1uang/
+    - xform/([gkhuai])g/$1uang/
     - xform/(\w)q/$1ao/
     - xform/(\w)w/$1en/
     - xform/(\w)r/$1an/
     - xform/(\w)t/$1eng/
     - xform/([jqxylmnbp])y/$1in/
-    - xform/([zcsuaighk])y/$1uai/
+    - xform/([zcsuaigkh])y/$1uai/
     - xform/([dtnlgkhrzcsuai])o/$1uo/
     - xform/(\w)p/$1ai/
     - xform/(\w)s/$1ang/
     - xform/(\w)d/$1ie/
     - xform/(\w)f/$1ian/
-    - xform/([qjx])h/$1iong/
+    - xform/([jqx])h/$1iong/
     - xform/([dtnlgkhrzcsuai])h/$1ong/
     - xform/0j/0er/
     - xform/([dnlmjqx])j/$1iu/
     - xform/(\w)k/$1ei/
     - xform/(\w)l/$1uan/
     - xform/(\w)z/$1ou/
-    - xform/([jqxdl)x/$1ia/
+    - xform/([jqxl])x/$1ia/
     - xform/([gkhuai])x/$1ua/
     - xform/(\w);/$1ing/
     - xform/(\w)b/$1iao/
@@ -126,6 +127,7 @@ reverse_lookup:
   dictionary: cangjie5
   enable_completion: true
   prefix: "`"
+  suffix: "'"
   tips: 〔倉頡〕
   preedit_format:
     - "xlit|abcdefghijklmnopqrstuvwxyz|日月金木水火土竹戈十大中一弓人心手口尸廿山女田難卜符|"
@@ -141,4 +143,4 @@ key_binder:
 recognizer:
   import_preset: default
   patterns:
-    reverse_lookup: "`[a-z]*$"
+    reverse_lookup: "`[a-z]*'?$"
