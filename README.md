@@ -18,6 +18,17 @@ curl -fsSL https://git.io/rime-install | bash -s -- waveform/ziguang_shuangpin
 * 切换到Rime输入法，在输入法菜单栏里点击 ***部署*** 。
 * 最后，通过 Ctrl + \` 呼出方案选单，切换到 紫光双拼 即可。
 
+若无法正常切换到紫光双拼，可尝试创建文件 ~/.config/ibus/rime/default.custom.yaml，内容如下，再重新 ***部署*** 。
+```yaml
+patch:
+  "horizontal": true
+  "style/horizontal": true
+  "menu/page_size": 8
+  "schema_list":
+  - { schema: double_pinyin_ziguang }
+```
+
+
 fcitx 输入引擎的配置与ibus大抵相同。此处不再赘述。相关细节请参考 东风破 [plum](https://github.com/rime/plum)。
 
 ## 致谢
